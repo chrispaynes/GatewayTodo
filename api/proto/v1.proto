@@ -66,6 +66,7 @@ service TodosAPI {
     rpc DeleteTodos(DeleteTodosRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/todos",
+            body: "*",
         };
     }
 }

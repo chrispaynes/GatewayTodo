@@ -56,5 +56,5 @@ func (t *TodoService) DeleteTodo(ctx context.Context, req *todos.DeleteTodoReque
 
 // DeleteTodos ...
 func (t *TodoService) DeleteTodos(ctx context.Context, req *todos.DeleteTodosRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+	return t.Data.DeleteTodos(ctx, req.GetIds())
 }
