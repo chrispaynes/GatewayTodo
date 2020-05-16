@@ -1,0 +1,68 @@
+version: "3.7"
+networks:
+    proxy:
+services:
+    ui:
+        container_name: api
+        build:
+            context: ./ui
+            dockerfile: Dockerfile
+        image: api:latest
+        restart: always
+        # networks:
+        #     - proxy
+        ports:
+            - "8080:8080"
+        volumes:
+            - /go/src/github.com/chrispaynes/vorChall:/go/src/github.com/chrispaynes/vorChall
+        env_file:
+            # VARIABLES:
+            #   - POSTGRES_USER
+            #   - POSTGRES_PASSWORD
+            #   - POSTGRES_DB
+            - ./api/api.env
+            - ./docker/postgres/postgres.env
+        environment:
+            - LOG_LEVEL=debug
+    api:
+        container_name: api
+        build:
+            context: ./api
+            dockerfile: Dockerfile
+        image: api:latest
+        # restart: always
+        # networks:
+        #     - proxy
+        ports:
+            - "3000:3000"
+            - "3001:3001"
+        volumes:
+            - /go/src/github.com/chrispaynes/vorChall:/go/src/github.com/chrispaynes/vorChall
+        env_file:
+            # VARIABLES:
+            #   - POSTGRES_USER
+            #   - POSTGRES_PASSWORD
+            #   - POSTGRES_DB
+            - ./api/api.env
+            - ./docker/postgres/postgres.env
+        environment:
+            - LOG_LEVEL=debug
+    postgres:
+        container_name: todos-postgres
+        build:
+            context: ./db/postgres
+        image: todos-postgres:latest
+        restart: always
+        # networks:
+        #     - proxy
+        env_file:
+            # VARIABLES:
+            #   - POSTGRES_USER
+            #   - POSTGRES_PASSWORD
+            #   - POSTGRES_DB
+            - ./db/postgres/postgres.env
+        ports:
+            - "5432:5432"
+        # volumes:
+            # - ${GOPATH}/src/github.com/chrispaynes/gRPCrud/docker/pgdata:/var/lib/postgresql/data
+
