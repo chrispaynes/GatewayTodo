@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+package api.v1.todos;
+
+option go_package = "./api/v1/todos";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Todos API"
+        version: "1.0"
+    };
+    schemes: [HTTP,HTTPS]
+    consumes: "application/json"
+    produces: "application/json"
+};
+
+message StringMessage {
+  string value = 1;
+}
+
+service TodosAPI {
+    rpc AddTodo(AddTodoRequest) returns (TodoResponse) {
+        option (google.api.http) = {
+            post: "/v1/todo",
+            body: "*",
+        };
+    }
+
+    rpc GetTodo(GetTodoRequest) returns (TodoResponse) {
+        option (google.api.http) = {
+            get: "/v1/todo/{id}",
+        };
+    }
+
+    rpc GetTodos(google.protobuf.Empty) returns (TodosResponse) {
+        option (google.api.http) = {
+            get: "/v1/todos",
+        };
+    }
+
+    rpc UpdateTodo(UpdateTodoRequest) returns (TodoResponse) {
+        option (google.api.http) = {
+            put: "/v1/todo/{id}",
+            body: "*",
+        };
+    }
+
+    rpc UpdateTodos(UpdateTodosRequest) returns (TodosResponse) {
+        option (google.api.http) = {
+            put: "/v1/todos",
+            body: "*",
+        };
+    }
+
+    rpc DeleteTodo(DeleteTodoRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/todo/{id}",
+        };
+    }
+
+    rpc DeleteTodos(DeleteTodosRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/todos",
+        };
+    }
+}
+
+// REQUESTS
+message AddTodoRequest {
+    string title = 1;
+    string description = 2;
+
+    enum Status {
+        New = 0;
+        InProgess = 1;
+        Completed = 2;
+    }
+
+    Status status = 3;
+    google.protobuf.FieldMask mask = 4;
+}
+
+message GetTodoRequest {
+    int64 id = 1;
+}
+
+message DeleteTodoRequest {
+    int64 id = 1;
+}
+
+message DeleteTodosRequest {
+    repeated int64 ids = 1;
+}
+
+message UpdateTodoRequest {
+    int64 id = 1;
+    string title = 2;
+    string description = 3;
+
+    enum Status {
+        New = 0;
+        InProgess = 1;
+        Completed = 2;
+    }
+
+    Status status = 4;
+    google.protobuf.FieldMask mask = 5;
+}
+
+message UpdateTodosRequest {
+    repeated UpdateTodoRequest todos = 1;
+}
+
+// RESPONSES
+message TodoResponse {
+    int64 id = 1;
+    string title = 2;
+    string description = 3;
+
+    enum Status {
+        New = 0;
+        InProgess = 1;
+        Completed = 2;
+    }
+
+    Status status = 4;
+}
+
+message TodosResponse {
+    repeated TodoResponse todos = 1;
+}
