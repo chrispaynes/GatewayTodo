@@ -37,7 +37,7 @@ services:
             - "3000:3000"
             - "3001:3001"
         volumes:
-            - /go/src/github.com/chrispaynes/vorChall:/go/src/github.com/chrispaynes/vorChall
+            - ./vorChall/api:/go/src/github.com/chrispaynes/vorChall
         env_file:
             # VARIABLES:
             #   - POSTGRES_USER
@@ -64,6 +64,6 @@ services:
             - ./db/postgres.env
         ports:
             - "5432:5432"
-        # volumes:
-            # - ${GOPATH}/src/github.com/chrispaynes/gRPCrud/docker/pgdata:/var/lib/postgresql/data
+        volumes:
+            - ./db/pgdata:/var/lib/postgresql/data
 
