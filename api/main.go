@@ -26,35 +26,26 @@ type config struct {
 	cancel   context.CancelFunc
 }
 
-var cfg = &config{}
+var conf = &config{}
 
 func init() {
-	log.SetFormatter(&log.JSONFormatter{
-		DisableTimestamp: true,
-	})
-
-	if err := envconfig.Process("", cfg); err != nil {
+	if err := envconfig.Process("", conf); err != nil {
 		log.WithError(err).Fatal(logger.ErrParseEnv)
 	}
 
-	log.SetLevel(log.InfoLevel)
-
-	if level, err := log.ParseLevel(cfg.LogLevel); err != nil {
-		log.SetLevel(level)
-	}
-
-	logger.LogEnv(cfg, "main")
+	logger.SetFormat(conf.LogLevel)
+	logger.LogEnv(conf, "main")
 }
 
 func main() {
-	cfg.ctx, cfg.cancel = context.WithCancel(context.Background())
+	conf.ctx, conf.cancel = context.WithCancel(context.Background())
 
 	db := postgres.NewDBWithRetry(1 * time.Minute)
 
-	s := server.NewServer(cfg.ctx, &sync.WaitGroup{}, db)
+	s := server.NewServer(conf.ctx, &sync.WaitGroup{}, db)
 
 	s.Start()
 
-	<-cfg.ctx.Done()
+	<-conf.ctx.Done()
 	s.Shutdown()
 }

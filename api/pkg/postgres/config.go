@@ -17,26 +17,10 @@ type config struct {
 var conf = &config{}
 
 func init() {
-	// TODO: remove these
-	// os.Setenv("POSTGRES_DB", "")
-	// os.Setenv("POSTGRES_PASSWORD", "")
-	// os.Setenv("POSTGRES_USER", "")
-	// os.Setenv("LOG_LEVEL", "info")
-
-	// log.Printf
-	log.SetFormatter(&log.JSONFormatter{
-		DisableTimestamp: true,
-	})
-
 	if err := envconfig.Process("", conf); err != nil {
 		log.WithError(err).Fatal(logger.ErrParseEnv)
 	}
 
-	log.SetLevel(log.InfoLevel)
-
-	if level, err := log.ParseLevel(conf.LogLevel); err != nil {
-		log.SetLevel(level)
-	}
-
+	logger.SetFormat(conf.LogLevel)
 	logger.LogEnv(conf, "postgres")
 }
