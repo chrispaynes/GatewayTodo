@@ -19,15 +19,22 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA app TO read_write_user;
 ALTER ROLE read_write_user SET search_path = app;
 ALTER ROLE read_write_user WITH NOINHERIT;
 
-CREATE TYPE app.todo_status AS ENUM ('new', 'in progress', 'complete');
+CREATE TABLE IF NOT EXISTS app.todo_status (
+    status_id                      SERIAL NOT NULL,
+    status                         VARCHAR(25) DEFAULT NULL,
+    CONSTRAINT todo_status_pkey    PRIMARY KEY (status_id)
+);
 
 CREATE TABLE IF NOT EXISTS app.todo (
-    id                      SERIAL NOT NULL,
-    title                   VARCHAR(80) DEFAULT NULL,
-    description             VARCHAR(1024) DEFAULT NULL,
-    status                  app.todo_status DEFAULT 'new',
-    constraint todo_pkey    PRIMARY KEY (id)
+    todo_id                    SERIAL NOT NULL,
+    title                      VARCHAR(80) DEFAULT NULL,
+    description                VARCHAR(1024) DEFAULT NULL,
+    status_id                  INTEGER,
+    created_dt                 TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_dt                 TIMESTAMPTZ,
+    CONSTRAINT todo_pkey       PRIMARY KEY (todo_id),
+    FOREIGN KEY (status_id)    REFERENCES app.todo_status(status_id)
 );
 
 -- START THE SERIAL SEQUENCE WITH A LARGER VALUE THAN 1
-ALTER SEQUENCE app.todo_id_seq RESTART WITH 100000;
+ALTER SEQUENCE app.todo_todo_id_seq RESTART WITH 100000;
