@@ -1,6 +1,7 @@
 version: "3.7"
 networks:
     proxy:
+        driver: bridge
 services:
     ui:
         container_name: api
@@ -30,9 +31,11 @@ services:
             context: ./api
             dockerfile: Dockerfile
         image: api:latest
-        # restart: always
-        # networks:
-        #     - proxy
+        restart: always
+        depends_on:
+            - postgres
+        networks:
+            - proxy
         ports:
             - "3000:3000"
             - "3001:3001"
@@ -43,6 +46,7 @@ services:
             #   - POSTGRES_USER
             #   - POSTGRES_PASSWORD
             #   - POSTGRES_DB
+            #   - POSTGRES_HOST
             - ./api/api.env
             - ./db/postgres.env
         environment:
@@ -54,13 +58,14 @@ services:
             dockerfile: Dockerfile
         image: todos-postgres:latest
         restart: always
-        # networks:
-        #     - proxy
+        networks:
+            - proxy
         env_file:
             # VARIABLES:
             #   - POSTGRES_USER
             #   - POSTGRES_PASSWORD
             #   - POSTGRES_DB
+            #   - POSTGRES_HOST
             - ./db/postgres.env
         ports:
             - "5432:5432"

@@ -121,14 +121,7 @@ message TodoResponse {
     int64 id = 1;
     string title = 2;
     string description = 3;
-
-    enum Status {
-        New = 0;
-        InProgess = 1;
-        Completed = 2;
-    }
-
-    Status status = 4;
+    string status = 4;
 }
 
 message TodosResponse {

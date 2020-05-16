@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/chrispaynes/vorChall/pkg/api"
 	"github.com/chrispaynes/vorChall/proto/go/api/v1/todos"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -26,13 +28,15 @@ type Config struct {
 	grpcServer *grpc.Server
 	httpServer *http.Server
 	api.Todo
+	db *sqlx.DB
 }
 
 // NewServer ...
-func NewServer(ctx context.Context, wg *sync.WaitGroup) *Config {
+func NewServer(ctx context.Context, wg *sync.WaitGroup, db *sqlx.DB) *Config {
 	return &Config{
 		ctx: ctx,
 		wg:  wg,
+		db:  db,
 	}
 }
 
@@ -87,7 +91,11 @@ func (c *Config) startGRPC() error {
 
 	c.grpcServer = grpc.NewServer()
 
-	todos.RegisterTodosAPIServer(c.grpcServer, &api.TodoService{})
+	todos.RegisterTodosAPIServer(c.grpcServer, &api.TodoService{
+		Data: &api.Conn{
+			DB: c.db,
+		},
+	})
 
 	c.grpcServer.Serve(lis)
 	return nil

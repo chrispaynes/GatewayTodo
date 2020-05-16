@@ -322,19 +322,10 @@
           "type": "string"
         },
         "status": {
-          "$ref": "#/definitions/todosTodoResponseStatus"
+          "type": "string"
         }
       },
       "title": "RESPONSES"
-    },
-    "todosTodoResponseStatus": {
-      "type": "string",
-      "enum": [
-        "New",
-        "InProgess",
-        "Completed"
-      ],
-      "default": "New"
     },
     "todosTodosResponse": {
       "type": "object",

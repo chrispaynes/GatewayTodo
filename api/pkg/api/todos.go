@@ -5,17 +5,16 @@ import (
 
 	"github.com/chrispaynes/vorChall/proto/go/api/v1/todos"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 )
 
 // TodoService ...
 type TodoService struct {
-	DB  *sqlx.DB
-	API Todo
+	Data Data
+	API  Todo
 }
 
-// Todo ...
-type Todo interface {
+// API ...
+type API interface {
 	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error)
 	GetTodo(ctx context.Context, req *todos.GetTodoRequest) (*todos.TodoResponse, error)
 	GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error)
@@ -32,12 +31,12 @@ func (t *TodoService) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*
 
 // GetTodo ...
 func (t *TodoService) GetTodo(ctx context.Context, req *todos.GetTodoRequest) (*todos.TodoResponse, error) {
-	return &todos.TodoResponse{}, nil
+	return t.Data.GetTodo(ctx, req.GetId())
 }
 
 // GetTodos ...
 func (t *TodoService) GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error) {
-	return &todos.TodosResponse{}, nil
+	return t.Data.GetTodos(ctx, nil)
 }
 
 // UpdateTodo ...
