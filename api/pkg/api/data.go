@@ -14,12 +14,12 @@ import (
 
 // Data ...
 type Data interface {
-	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error)
+	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error)
 	GetTodo(ctx context.Context, id uint64) (*todos.TodoResponse, error)
 	GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error)
 	UpdateTodo(ctx context.Context, req *todos.UpdateTodoRequest) (*todos.TodoResponse, error)
 	UpdateTodos(ctx context.Context, req *todos.UpdateTodosRequest) (*todos.TodosResponse, error)
-	DeleteTodo(ctx context.Context, req *todos.DeleteTodoRequest) (*empty.Empty, error)
+	DeleteTodo(ctx context.Context, id uint64) (*empty.Empty, error)
 	DeleteTodos(ctx context.Context, req *todos.DeleteTodosRequest) (*empty.Empty, error)
 }
 
@@ -83,7 +83,8 @@ WHERE todo_id = %d
 
 // GetTodos ...
 func (c *Conn) GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error) {
-	log.Debugf("GetTodos() - ctx: %+v", ctx)
+	errMsg := errors.New("failed to retrieve all todos")
+	txName := "GetTodos"
 
 	t := Todo{}
 
@@ -96,8 +97,8 @@ JOIN app.todo_status ts
 	rows, err := c.DB.Queryx(query)
 
 	if err != nil {
-		log.WithError(err).Error("failed to retrieve all Todos")
-		return nil, errors.New("failed to retrieve all Todos")
+		log.WithError(err).Error(ErrQuery(txName).Error())
+		return nil, errMsg
 	}
 
 	resp := []*todos.TodoResponse{}
@@ -105,9 +106,9 @@ JOIN app.todo_status ts
 	for rows.Next() {
 		err := rows.StructScan(&t)
 		if err != nil {
-			log.WithError(err).WithError(ErrScan("GetTodos"))
+			log.WithError(err).Error(ErrScan(txName).Error())
 
-			return nil, errors.New("failed to retrieve all todos")
+			return nil, errMsg
 		}
 
 		resp = append(resp, newTodoResponse(&t))
@@ -119,8 +120,36 @@ JOIN app.todo_status ts
 }
 
 // AddTodo ...
-func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error) {
-	panic("not implemented") // TODO: Implement
+func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error) {
+	errMsg := errors.New("failed to store Todo")
+	txName := "AddTodo"
+
+	query := `INSERT INTO app.todo (title, description) VALUES ($1, $2)`
+	tx, err := c.DB.Begin()
+
+	if err != nil {
+		log.WithError(err).Error(ErrBeginTransaction(txName).Error())
+		return nil, errMsg
+	}
+
+	res, err := tx.Exec(query, req.GetTitle(), req.GetDescription())
+
+	if err != nil {
+		log.WithError(err).Error(ErrExecTransaction(txName).Error())
+		return nil, errMsg
+	}
+
+	if numRows, _ := res.RowsAffected(); numRows == 0 {
+		log.WithError(err).Error(ErrNoRowsAffect(txName).Error())
+		return nil, errMsg
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.WithError(err).Error(ErrCommit(txName).Error())
+		return nil, errMsg
+	}
+
+	return &empty.Empty{}, nil
 }
 
 // UpdateTodo ...
@@ -134,8 +163,36 @@ func (c *Conn) UpdateTodos(ctx context.Context, req *todos.UpdateTodosRequest) (
 }
 
 // DeleteTodo ...
-func (c *Conn) DeleteTodo(ctx context.Context, req *todos.DeleteTodoRequest) (*empty.Empty, error) {
-	panic("not implemented") // TODO: Implement
+func (c *Conn) DeleteTodo(ctx context.Context, id uint64) (*empty.Empty, error) {
+	errMsg := errors.New("failed to store Todo")
+	txName := "DeleteTodo"
+
+	query := `DELETE FROM app.todo WHERE todo_id = %d`
+	tx, err := c.DB.Begin()
+
+	if err != nil {
+		log.WithError(err).Error(ErrBeginTransaction(txName).Error())
+		return nil, errMsg
+	}
+
+	res, err := tx.Exec(fmt.Sprintf(query, id))
+
+	if err != nil {
+		log.WithError(err).Error(ErrExecTransaction(txName).Error())
+		return nil, errMsg
+	}
+
+	if numRows, _ := res.RowsAffected(); numRows == 0 {
+		log.WithError(err).Error(ErrNoRowsAffect(txName).Error())
+		return nil, errMsg
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.WithError(err).Error(ErrCommit(txName).Error())
+		return nil, errMsg
+	}
+
+	return &empty.Empty{}, nil
 }
 
 // DeleteTodos ...

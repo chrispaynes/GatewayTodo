@@ -15,7 +15,7 @@ type TodoService struct {
 
 // API ...
 type API interface {
-	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error)
+	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error)
 	GetTodo(ctx context.Context, req *todos.GetTodoRequest) (*todos.TodoResponse, error)
 	GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error)
 	UpdateTodo(ctx context.Context, req *todos.UpdateTodoRequest) (*todos.TodoResponse, error)
@@ -25,8 +25,8 @@ type API interface {
 }
 
 // AddTodo ...
-func (t *TodoService) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error) {
-	return &todos.TodoResponse{}, nil
+func (t *TodoService) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error) {
+	return t.Data.AddTodo(ctx, req)
 }
 
 // GetTodo ...
@@ -51,7 +51,7 @@ func (t *TodoService) UpdateTodos(ctx context.Context, req *todos.UpdateTodosReq
 
 // DeleteTodo ...
 func (t *TodoService) DeleteTodo(ctx context.Context, req *todos.DeleteTodoRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+	return t.Data.DeleteTodo(ctx, req.GetId())
 }
 
 // DeleteTodos ...

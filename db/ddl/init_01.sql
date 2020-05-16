@@ -29,11 +29,11 @@ CREATE TABLE IF NOT EXISTS app.todo (
     todo_id                    SERIAL NOT NULL,
     title                      VARCHAR(80) DEFAULT NULL,
     description                VARCHAR(1024) DEFAULT NULL,
-    status_id                  INTEGER,
+    status_id                  INTEGER DEFAULT 1,
     created_dt                 TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_dt                 TIMESTAMPTZ,
     CONSTRAINT todo_pkey       PRIMARY KEY (todo_id),
-    FOREIGN KEY (status_id)    REFERENCES app.todo_status(status_id)
+    FOREIGN KEY (status_id)    REFERENCES app.todo_status(status_id) ON DELETE SET NULL
 );
 
 -- START THE SERIAL SEQUENCE WITH A LARGER VALUE THAN 1
