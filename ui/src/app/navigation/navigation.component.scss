@@ -1,0 +1,21 @@
+div {
+  border: solid 2px red;
+}
+
+ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+li {
+  display: list-item;
+  text-align: -webkit-match-parent;
+  border: solid 1px red;
+  margin: 0px 8px;
+}
+
+span {
+  margin: 0px 16px 0px 4px;
+}

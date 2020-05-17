@@ -1,0 +1,43 @@
+<div class="todo-wrapper">
+    <ng-container *ngIf="todo">
+        <label>
+            Title:
+            <input type="text" [formControl]="title" />
+        </label>
+
+        <p>Value: {{ title.value }}</p>
+        <label (click)="onEdit(todo)">{{ todo.title }}</label>
+        <label (click)="onEdit(todo)">{{ todo.description }}</label>
+        <input
+            class="completion-toggle"
+            type="checkbox"
+            (click)="onUpdate(todo)"
+        />
+        <p>{{ todo.status }}</p>
+        <p>{{ todo.createdDT }}</p>
+        <p>{{ todo.updatedDT }}</p>
+
+        <div class="view">
+            <input
+                class="toggle ng-pristine ng-untouched ng-valid"
+                type="checkbox"
+                ng-model="todo.completed"
+                (click)="onToggleCompletion(todo)"
+            />
+            Edit <button class="destroy" (click)="onEdit(todo)"></button> Delete
+            <button class="destroy" (click)="onDelete(todo)"></button>
+
+            Update<button class="destroy" (click)="onUpdate(todo)"></button>
+        </div>
+    </ng-container>
+</div>
+
+<!-- <div class="new-todo" *ngFor="let todo of todos; index as i; first as isFirst">
+    {{todo.title}}
+    {{todo.description}}
+    {{todo.status}}
+    {{todo.createdDT}}
+    {{todo.updatedDT}}
+
+    <span *ngIf="isFirst">default</span>
+</div> -->

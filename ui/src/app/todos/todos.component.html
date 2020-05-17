@@ -1,0 +1,21 @@
+<section>
+  <p>TodosComponent</p>
+
+  <span *ngIf="todos.length === 0">
+      no todos to display
+  </span>
+
+  <app-summary [todoCount]="todos.length" ></app-summary>
+
+  Select All <input id="toggle-all" class="toggle-all" type="checkbox" (click)="toggle()" />
+
+  <ul class="todo-list" *ngIf="todos.length > 0">
+      Add A Todo<button class="add"></button>
+      <ng-container *ngIf="todos.length > 0">
+          <app-todo></app-todo>
+          <li *ngFor="let todo of todos; index as i; first as isFirst">
+              <app-todo [todo]="todo"></app-todo>
+          </li>
+      </ng-container>
+  </ul>
+</section>
