@@ -1,8 +1,14 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, OnInit, Input, HostListener } from '@angular/core';
+import {
+    FormControl,
+    FormArray,
+    FormGroup,
+    FormBuilder,
+    Validators,
+} from '@angular/forms';
 
 import { TodoService } from '../todo.service';
-import { Todo } from '../todo';
+import { Todo, TodoEdit } from '../todo';
 import { map, tap } from 'rxjs/operators';
 
 @Component({
@@ -13,24 +19,59 @@ import { map, tap } from 'rxjs/operators';
 export class TodoComponent implements OnInit {
     @Input() todo: Todo;
 
-    constructor(private _todoService: TodoService) {}
-
-    ngOnInit(): void {
-      if (!this.todo) {
-        // create a template for creating a new todo
-        this.todo = new Todo(0, "", "", "", "", "")
-        console.log("looks like we need to create a todo");
-      }
+    @HostListener('document:keydown.escape', ['$event'])
+    onKeydownHandler(event: KeyboardEvent) {
+        console.log(event);
+        this.editMode = false;
     }
 
+    controls: FormArray;
+    editMode: boolean = false;
+    originalTitle: string = '';
+    originalDescription: string = '';
+    form: FormGroup;
 
-    title = new FormControl('');
+    constructor(
+        private _todoService: TodoService,
+        private formBuilder: FormBuilder
+    ) {}
 
-    updateName() {
-      this.title.setValue('Nancy');
+    ngOnInit(): void {
+        this.form = this.formBuilder.group({
+            title: [this.todo.title, Validators.required],
+            description: [this.todo.description, Validators.required],
+        });
+        this.originalTitle = this.todo.title;
+        this.originalDescription = this.todo.description;
+
+        this.onChanges();
+    }
+
+    onChanges(): void {
+        this.form.valueChanges.subscribe((edit: TodoEdit) => {
+            if (
+                edit.title !== this.originalTitle ||
+                edit.description !== this.originalDescription
+            ) {
+                Object.assign(this.todo, { ...edit, _isDirty: true });
+            } else {
+                Object.assign(this.todo, { ...edit, _isDirty: false });
+            }
+
+            console.log('val', this.todo);
+        });
+    }
+
+    public onFocus(event) {
+        if (!event) {
+            this.editMode = false;
+        }
+
+        console.log('FOCUS', event);
     }
 
     public onEdit(todo: Todo) {
+        this.editMode = true;
         console.log('onEdit', todo);
     }
 
@@ -50,10 +91,10 @@ export class TodoComponent implements OnInit {
         console.log('onToggleCompletion', todo);
     }
 
-    // emails: Email[];
-    // selectedEmail: Email;
+    public onSelect(event) {
+      // console.log("selected before", event);
+      // this.todo._isSelected = !event._isSelected
+      // console.log("selected after", this.todo);
+    }
 
-    // onSelect(email: Email): void {
-    //   this.selectedEmail = email;
-    // }
 }
