@@ -17,7 +17,8 @@ type TodoService struct {
 type API interface {
 	AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error)
 	GetTodo(ctx context.Context, req *todos.GetTodoRequest) (*todos.TodoResponse, error)
-	GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error)
+	GetAllTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error)
+	GetTodosById(ctx context.Context, req *todos.GetTodosRequest) (*todos.TodosResponse, error)
 	UpdateTodo(ctx context.Context, req *todos.UpdateTodoRequest) (*todos.TodoResponse, error)
 	UpdateTodos(ctx context.Context, req *todos.UpdateTodosRequest) (*todos.TodosResponse, error)
 	DeleteTodo(ctx context.Context, req *todos.DeleteTodoRequest) (*empty.Empty, error)
@@ -34,19 +35,24 @@ func (t *TodoService) GetTodo(ctx context.Context, req *todos.GetTodoRequest) (*
 	return t.Data.GetTodo(ctx, req.GetId())
 }
 
-// GetTodos ...
-func (t *TodoService) GetTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error) {
-	return t.Data.GetTodos(ctx, nil)
+// GetAllTodos ...
+func (t *TodoService) GetAllTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error) {
+	return t.Data.GetAllTodos(ctx, nil)
+}
+
+// GetTodosById ...
+func (t *TodoService) GetTodosById(ctx context.Context, req *todos.GetTodosRequest) (*todos.TodosResponse, error) {
+	return t.Data.GetTodosByID(ctx, req)
 }
 
 // UpdateTodo ...
 func (t *TodoService) UpdateTodo(ctx context.Context, req *todos.UpdateTodoRequest) (*todos.TodoResponse, error) {
-	return &todos.TodoResponse{}, nil
+	return t.Data.UpdateTodo(ctx, req)
 }
 
 // UpdateTodos ...
 func (t *TodoService) UpdateTodos(ctx context.Context, req *todos.UpdateTodosRequest) (*todos.TodosResponse, error) {
-	return &todos.TodosResponse{}, nil
+	return t.Data.UpdateTodos(ctx, req)
 }
 
 // DeleteTodo ...

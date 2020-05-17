@@ -1,6 +1,6 @@
 INSERT INTO app.todo_status (status) VALUES
     ('new'),
-    ('in progress'),
+    ('progress'),
     ('completed'),
     ('archived');
 

@@ -2,7 +2,6 @@ syntax = "proto3";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "google/protobuf/field_mask.proto";
 import "protoc-gen-swagger/options/annotations.proto";
 
 package api.v1.todos;
@@ -37,9 +36,15 @@ service TodosAPI {
         };
     }
 
-    rpc GetTodos(google.protobuf.Empty) returns (TodosResponse) {
+    rpc GetAllTodos(google.protobuf.Empty) returns (TodosResponse) {
         option (google.api.http) = {
             get: "/v1/todos",
+        };
+    }
+
+    rpc GetTodosById(GetTodosRequest) returns (TodosResponse) {
+        option (google.api.http) = {
+            get: "/v1/todos/{ids}",
         };
     }
 
@@ -75,19 +80,14 @@ service TodosAPI {
 message AddTodoRequest {
     string title = 1;
     string description = 2;
-
-    enum Status {
-        New = 0;
-        InProgess = 1;
-        Completed = 2;
-    }
-
-    Status status = 3;
-    google.protobuf.FieldMask mask = 4;
 }
 
 message GetTodoRequest {
     uint64 id = 1;
+}
+
+message GetTodosRequest {
+    repeated uint64 ids = 1;
 }
 
 message DeleteTodoRequest {
@@ -104,13 +104,13 @@ message UpdateTodoRequest {
     string description = 3;
 
     enum Status {
-        New = 0;
-        InProgess = 1;
-        Completed = 2;
+        new = 0;
+        progress = 1;
+        completed = 2;
+        archived = 3;
     }
 
     Status status = 4;
-    google.protobuf.FieldMask mask = 5;
 }
 
 message UpdateTodosRequest {

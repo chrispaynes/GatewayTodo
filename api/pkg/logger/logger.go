@@ -17,6 +17,8 @@ func SetFormat(logLevel string) {
 		ForceColors:      true,
 	})
 
+	log.SetReportCaller(true)
+
 	log.SetLevel(log.InfoLevel)
 
 	if level, err := log.ParseLevel(logLevel); err != nil {

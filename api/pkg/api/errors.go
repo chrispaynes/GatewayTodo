@@ -26,12 +26,20 @@ var (
 		return newError(queryName, "failed to insert row(s)")
 	}
 
-	ErrNoRowsAffect = func(queryName string) error {
+	ErrNoRowsAffected = func(queryName string) error {
 		return newError(queryName, "failed to affect any rows with transaction")
 	}
 
 	ErrQuery = func(queryName string) error {
 		return newError(queryName, "failed to query row(s)")
+	}
+
+	InfoRollback = func(queryName string) error {
+		return newError(queryName, "rolling back transaction")
+	}
+
+	ErrRollback = func(queryName string) error {
+		return newError(queryName, "failed to rollback transaction")
 	}
 
 	ErrScan = func(queryName string) error {
