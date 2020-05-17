@@ -11,6 +11,10 @@ import (
 
 	"github.com/chrispaynes/vorChall/pkg/api"
 	"github.com/chrispaynes/vorChall/proto/go/api/v1/todos"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
+
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -108,9 +112,20 @@ func (c *Config) startREST() error {
 
 	mux := runtime.NewServeMux()
 
+	runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		// use the original protobuf name for fields.
+		OrigName: true,
+		// render fields with zero values.
+		EmitDefaults: true,
+	})
+
+	// TODO move to 12 factor vars
 	c.httpServer = &http.Server{
-		Addr:    ":3000",
-		Handler: mux,
+		Addr:         ":3000",
+		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  120 * time.Second,
+		WriteTimeout: 120 * time.Second,
+		Handler:      newRouter(mux),
 	}
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
@@ -120,4 +135,29 @@ func (c *Config) startREST() error {
 	}
 
 	return c.httpServer.ListenAndServe()
+}
+
+func newRouter(mux *runtime.ServeMux) *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(middleware.RedirectSlashes)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Timeout(time.Duration(15 * time.Second)))
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	pattern := "/v1/todo*"
+	r.Method("DELETE", pattern, mux)
+	r.Method("GET", pattern, mux)
+	r.Method("PUT", pattern, mux)
+	r.Method("POST", pattern, mux)
+
+	return r
 }

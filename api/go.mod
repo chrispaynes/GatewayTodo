@@ -3,8 +3,8 @@ module github.com/chrispaynes/vorChall
 go 1.14
 
 require (
-	github.com/go-chi/chi v4.1.1+incompatible // indirect
-	github.com/go-chi/cors v1.1.1 // indirect
+	github.com/go-chi/chi v4.1.1+incompatible
+	github.com/go-chi/cors v1.1.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/grpc-gateway v1.14.5

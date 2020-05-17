@@ -69,8 +69,8 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "integer",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -98,8 +98,8 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "integer",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -127,8 +127,8 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "integer",
+            "format": "int64"
           },
           {
             "name": "body",
@@ -250,8 +250,8 @@
             "required": true,
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uint64"
+              "type": "integer",
+              "format": "int64"
             },
             "collectionFormat": "csv",
             "minItems": 1
@@ -328,8 +328,8 @@
         "ids": {
           "type": "array",
           "items": {
-            "type": "string",
-            "format": "uint64"
+            "type": "integer",
+            "format": "int64"
           }
         }
       }
@@ -338,8 +338,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "integer",
+          "format": "int64"
         },
         "title": {
           "type": "string"
@@ -374,8 +374,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "integer",
+          "format": "int64"
         },
         "title": {
           "type": "string"

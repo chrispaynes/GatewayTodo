@@ -15,13 +15,13 @@ import (
 // Data ...
 type Data interface {
 	AddTodo(context.Context, *todos.AddTodoRequest) (*empty.Empty, error)
-	GetTodo(context.Context, uint64) (*todos.TodoResponse, error)
+	GetTodo(context.Context, uint32) (*todos.TodoResponse, error)
 	GetAllTodos(context.Context, *empty.Empty) (*todos.TodosResponse, error)
 	GetTodosByID(context.Context, *todos.GetTodosRequest) (*todos.TodosResponse, error)
 	UpdateTodo(context.Context, *todos.UpdateTodoRequest) (*todos.TodoResponse, error)
 	UpdateTodos(context.Context, *todos.UpdateTodosRequest) (*todos.TodosResponse, error)
-	DeleteTodo(context.Context, uint64) (*empty.Empty, error)
-	DeleteTodos(context.Context, []uint64) (*empty.Empty, error)
+	DeleteTodo(context.Context, uint32) (*empty.Empty, error)
+	DeleteTodos(context.Context, []uint32) (*empty.Empty, error)
 }
 
 // Conn ...
@@ -31,7 +31,7 @@ type Conn struct {
 
 // Todo ...
 type Todo struct {
-	ID          uint64         `db:"todo_id"`
+	ID          uint32         `db:"todo_id"`
 	Title       sql.NullString `db:"title"`
 	Description sql.NullString `db:"description"`
 	Status      string         `db:"status"`
@@ -60,7 +60,7 @@ func newTodoResponse(t *Todo) *todos.TodoResponse {
 }
 
 // GetTodo ...
-func (c *Conn) GetTodo(ctx context.Context, ID uint64) (*todos.TodoResponse, error) {
+func (c *Conn) GetTodo(ctx context.Context, ID uint32) (*todos.TodoResponse, error) {
 	log.Debugf("GetTodo() - ctx: %+v, id: %d", ctx, ID)
 	errMsg := fmt.Errorf("failed to get Todo: %d", ID)
 	txName := "GetTodo"
@@ -273,7 +273,7 @@ WHERE todo_id = %d
 		return nil, errMsg
 	}
 
-	IDs := []uint64{}
+	IDs := []uint32{}
 
 	for _, t := range req.GetTodos() {
 		res, err := tx.Exec(fmt.Sprintf(query, t.GetTitle(), t.GetDescription(), t.GetStatus(), t.GetId()))
@@ -314,7 +314,7 @@ WHERE todo_id = %d
 }
 
 // DeleteTodo ...
-func (c *Conn) DeleteTodo(ctx context.Context, ID uint64) (*empty.Empty, error) {
+func (c *Conn) DeleteTodo(ctx context.Context, ID uint32) (*empty.Empty, error) {
 	errMsg := fmt.Errorf("failed to delete Todo: %d", ID)
 	txName := "DeleteTodo"
 
@@ -342,7 +342,7 @@ func (c *Conn) DeleteTodo(ctx context.Context, ID uint64) (*empty.Empty, error) 
 }
 
 // DeleteTodos ...
-func (c *Conn) DeleteTodos(ctx context.Context, IDs []uint64) (*empty.Empty, error) {
+func (c *Conn) DeleteTodos(ctx context.Context, IDs []uint32) (*empty.Empty, error) {
 	if len(IDs) == 0 {
 		return &empty.Empty{}, nil
 	}
