@@ -1,4 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+
+
+*:focus {
+  outline: none;
+}
+
 ul {
     list-style-type: none;
     display: block;
@@ -7,4 +13,8 @@ ul {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     padding-inline-start: 0px;
+}
+
+html {
+  padding: 32px;
 }

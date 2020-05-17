@@ -5,14 +5,16 @@ export class Todo {
     status: string;
     createdDT: string;
     updatedDT: string;
+    _isDirty: boolean;
+    _isSelected: boolean;
 
     constructor(
-        id: number,
         title: string,
         description: string,
-        status: string,
-        createdDT: string,
-        updatedDT: string
+        id?: number,
+        status?: string,
+        createdDT?: string,
+        updatedDT?: string
     ) {
         this.id = id;
         this.title = title;
@@ -20,6 +22,8 @@ export class Todo {
         this.status = status;
         this.createdDT = createdDT;
         this.updatedDT = updatedDT;
+        this._isDirty = false;
+        this._isSelected = false;
     }
 }
 
@@ -28,3 +32,5 @@ export interface Todos {
 }
 
 export type StatusFilter = '' | 'new' | 'todo' | 'completed' | 'archived';
+
+export type TodoEdit = {"title": string , "description": string}
