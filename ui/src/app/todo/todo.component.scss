@@ -1,95 +1,88 @@
 div.todo-wrapper {
-    border: solid 1px blue;
-    min-width: 200px;
-    min-height: 200px;
-    position: relative;
+  border-bottom: solid 3px black;
+  min-width: 200px;
+  min-height: 200px;
+  position: relative;
+  margin-bottom: 64px;
 }
 
 .todo-footer {
-    border: solid 1px red;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
 
 .new-todo {
-    padding: 16px 16px 16px 60px;
-    border: none;
-    background: rgba(0, 0, 0, 0.003);
-    box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
+  padding: 16px 16px 16px 60px;
+  border: none;
+  background: rgba(0, 0, 0, 0.003);
+  box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
 }
 
 input,
 textarea {
-    display: block;
-    width: 100%;
-    border: none;
-    border-bottom: solid 1px lightgray;
+  display: block;
+  width: 100%;
+  border: none;
 }
 
 .title {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .description {
-  // border: solid 1px pink;
   min-height: 100px;
 }
 
-form > input {
+form>input {
   width: 100%;
-  border: solid 1px pink;
 }
-
-
 
 .dateline {
-    display: flex;
-    flex-flow: row wrap;
-    font-size: smaller;
-    font-style: italic;
-    border: solid 1px;
-    justify-content: space-around;
+  display: flex;
+  flex-flow: row wrap;
+  font-size: smaller;
+  font-style: italic;
+  justify-content: space-around;
 }
 
-.dateline > p {
-    border: solid 1px;
-    flex: 0 2 50%;
-    margin: 0;
-    white-space: nowrap;
-    text-align: center;
+.dateline>p {
+  flex: 0 2 50%;
+  margin: 0;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .button-group {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: space-evenly;
-    justify-content: flex-end;
-    padding: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-evenly;
+  justify-content: flex-end;
+  padding: 4px;
 }
 
-.button-group > button {
-    display: flex;
-    margin: 0;
+.button-group>button {
+  display: flex;
+  margin: 0;
 }
 
 .completion-toggle {
-    text-align: center;
-    width: 40px;
-    height: 40px;
-    height: auto;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
-    border: none;
-    opacity: 0;
+  text-align: center;
+  width: 40px;
+  height: 40px;
+  height: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  border: none;
+  opacity: 0;
 }
 
 .todo {
-    padding: 16px 16px 16px 60px;
-    border: none;
-    background: rgba(0, 0, 0, 0.003);
-    box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
+  padding: 16px 16px 16px 60px;
+  border: none;
+  background: rgba(0, 0, 0, 0.003);
+  box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
 }

@@ -1,10 +1,23 @@
-section {
-    border: solid 1px green;
+.todo-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
-.todo-list li {
-    position: relative;
-    font-size: 24px;
-    border-bottom: 1px solid #ededed;
-    list-style: none;
+.todo-list > li {
+  flex: 1 3 33%;
+  padding: 0 8px 0 0;
+}
+
+.mass-edit {
+  margin: 12px 0;
+}
+
+.mass-edit > span {
+  margin-left: 4px;
+}
+
+.mass-edit > button {
+  margin-right: 8px;
 }
