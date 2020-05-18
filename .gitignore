@@ -1,7 +1,7 @@
 *.env
 *.DS_Store
 *.txt
-postgres.env
+# postgres.env
 pgdata
 node_modules
 

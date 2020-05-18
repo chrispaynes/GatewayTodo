@@ -7,12 +7,12 @@ import (
 )
 
 type config struct {
-	gRPCPort string `default:"3001" envconfig:"GRPC_PORT" split_words:"true"`
+	GRPCPort string `default:"3001" envconfig:"GRPC_PORT" split_words:"true"`
 	// this port is dynamically generated and set as PORT by Heroku
 	HerokuPort         string `required:"true" envconfig:"PORT" split_words:"true"`
 	HTTPTimeoutSeconds int    `default:"120" envconfig:"HTTP_TIME_SECONDS" split_words:"true"`
 	LogLevel           string `default:"info" envconfig:"LOG_LEVEL" split_words:"true"`
-	RESTPort           string `default:"3000" envconfig:"REST_POR" split_words:"true"`
+	RESTPort           string `default:"3000" envconfig:"REST_PORT" split_words:"true"`
 	ServerEnv          string `default:"prod" envconfig:"SERVER_ENV" split_words:"true"`
 	UIFilePath         string `default:"./dist/todo-app/" envconfig:"UI_FILEPATH" split_words:"true"`
 	UIPort             string `default:"4200" envconfig:"UI_PORT" split_words:"true"`

@@ -18,9 +18,9 @@ func ServeUI() {
 		ext := filepath.Ext(file)
 
 		if file == "" || ext == "" {
-			c.File(conf.UIFilePath + "index.html")
+			c.File("./dist/todo-app/index.html")
 		} else {
-			c.File(conf.UIFilePath + path.Join(dir, file))
+			c.File("./dist/todo-app/" + path.Join(dir, file))
 		}
 	}
 

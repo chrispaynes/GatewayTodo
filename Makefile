@@ -1,4 +1,4 @@
-.PHONY: api apiTidy apiVendor nukeDB proto todoApp ui
+.PHONY: api apiTidy apiVendor nukeDB proto todoApp uiNG uiProduction unbindPort4200
 
 api:
 	# restart the api
@@ -21,7 +21,15 @@ proto:
 todoApp:
 	@docker-compose up -d --force-recreate && docker-compose logs -f
 
-ui:
+uiNG: unbindPort4200
 	# start the UI for development
 	# note: the ng serve command requires having the Angular CLI installed https://cli.angular.io/
 	@cd ui && ng serve
+
+uiProduction:
+	# note: the ng serve command requires having the Angular CLI installed https://cli.angular.io/
+	@cd ui && ng build --prod=true
+	@cd ui && ng build --prod=true --outputPath=../api/dist/todo-app
+
+unbindPort4200:
+	kill -9 $$(lsof -i :4200 | grep node | awk '{ print $$2}' | xargs) || true

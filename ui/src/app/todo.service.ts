@@ -12,16 +12,18 @@ import { Todo, Todos } from './todo';
   providedIn: 'root',
 })
 export class TodoService {
+  baseURL: string = `http://127.0.0.1:3000`;
+
   constructor(private _http: HttpClient) {}
 
   public getAllTodos(): Observable<Todo> {
-    return this._http.get('http://localhost:3000/v1/todos').pipe(
+    return this._http.get(`${this.baseURL}/v1/todos`).pipe(
       timeout(2000),
       catchError((error: HttpErrorResponse) => {
         return of(null);
       }),
       switchMap((t: Todos) => {
-        return t.todos ? t.todos : of(null);
+        return t && t.todos ? t.todos : of(null);
       })
     );
   }
@@ -29,7 +31,7 @@ export class TodoService {
   public addTodo(todo: Todo): Observable<Todo> {
     const body = { title: todo.title, description: todo.description };
 
-    return this._http.post('http://localhost:3000/v1/todo', body).pipe(
+    return this._http.post(`${this.baseURL}/v1/todo`, body).pipe(
       timeout(2000),
       catchError((error: HttpErrorResponse) => {
         return of(null);
@@ -49,7 +51,7 @@ export class TodoService {
     };
 
     return this._http
-      .put(`http://localhost:3000/v1/todo/${todo.id}`, body)
+      .put(`${this.baseURL}/v1/todo/${todo.id}`, body)
       .pipe(
         timeout(2000),
         catchError((error: HttpErrorResponse) => {
@@ -62,20 +64,20 @@ export class TodoService {
   }
 
   public updateTodos(todos: Todos): Observable<Todo> {
-    return this._http.put('http://localhost:3000/v1/todos', todos).pipe(
+    return this._http.put(`${this.baseURL}/v1/todos`, todos).pipe(
       timeout(2000),
       catchError((error: HttpErrorResponse) => {
         return of(null);
       }),
       switchMap((t: Todos) => {
-        return t.todos ? t.todos : of(null);
+        return t && t.todos ? t.todos : of(null);
       })
     );
   }
 
   public deleteTodo(id: number): Observable<boolean> {
     return this._http
-      .request('delete', `http://localhost:3000/v1/todo/${id}`, {
+      .request('delete', `${this.baseURL}/v1/todo/${id}`, {
         observe: 'response',
       })
       .pipe(
@@ -89,7 +91,7 @@ export class TodoService {
 
   public deleteTodos(ids: number[]): Observable<boolean> {
     return this._http
-      .request('delete', 'http://localhost:3000/v1/todos', {
+      .request('delete', `${this.baseURL}/v1/todos`, {
         observe: 'response',
         body: { ids: ids },
       })

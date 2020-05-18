@@ -10,7 +10,7 @@ EXPOSE 3000 3001
 
 COPY . .
 
-RUN go build -o /go/bin/api
+RUN go build -o /go/bin/api -mod=readonly
 
 USER nobody
 

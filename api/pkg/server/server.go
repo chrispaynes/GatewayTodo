@@ -91,7 +91,7 @@ func (c *Config) Shutdown() {
 // startGRPCServer starts the gRPC server
 // and registers the gRPC API Server
 func (c *Config) startGRPCServer() error {
-	lis, err := net.Listen("tcp", ":"+conf.gRPCPort)
+	lis, err := net.Listen("tcp", ":"+conf.GRPCPort)
 
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (c *Config) startRESTServer() error {
 	}
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := todos.RegisterTodosAPIHandlerFromEndpoint(ctx, mux, ":"+conf.gRPCPort, opts)
+	err := todos.RegisterTodosAPIHandlerFromEndpoint(ctx, mux, ":"+conf.GRPCPort, opts)
 
 	if err != nil {
 		return err

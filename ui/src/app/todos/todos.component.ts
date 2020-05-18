@@ -100,6 +100,7 @@ export class TodosComponent implements OnInit {
       .pipe(
         tap((wasSuccessful: boolean) => {
           if (wasSuccessful) {
+            this.selectedTodos = [];
             this.todos = this.todos.filter(
               (todo: Todo) => !todoIDs.includes(todo.id)
             );

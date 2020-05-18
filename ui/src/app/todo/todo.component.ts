@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, HostListener } from '@angular/core';
 import {
-  FormControl,
   FormArray,
   FormGroup,
   FormBuilder,
@@ -14,7 +13,7 @@ import {
   DefaultTemplateDescription,
   DefaultTemplateTitle,
 } from '../todo';
-import { map, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 
 @Component({
