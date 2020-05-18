@@ -1,39 +1,38 @@
 <div class="todo-wrapper">
-    <ng-container *ngIf="todo">
-        <ng-container *ngIf="!editMode">
-          <p class="title" (focus)="onFocus($event)" (click)="onEdit(todo)">{{ todo.title }}</p>
-          <p class="description" (click)="onEdit(todo)">{{ todo.description }}</p>
-        </ng-container>
+  <ng-container *ngIf="todo">
+    <ng-container *ngIf="!editMode">
+      <p class="title" (focus)="onFocus($event)" (click)="onEdit(todo)">{{ todo.title }}</p>
+      <p class="description" (click)="onEdit(todo)">{{ todo.description }}</p>
+    </ng-container>
 
-      <div *ngIf="editMode">
-        <form [formGroup]="form" (ngSubmit)="onEdit(todo)">
-          <input class="title" formControlName="title" placeholder="Todo Title">
-          <input class="description" formControlName="description" placeholder="Todo Description">
-        </form>
+    <div *ngIf="editMode">
+      <form [formGroup]="form" (ngSubmit)="onEdit(todo)">
+        <input class="title" formControlName="title" placeholder="Todo Title">
+        <input class="description" formControlName="description" placeholder="Todo Description">
+      </form>
+    </div>
+
+
+    <div class="todo-footer">
+      <div class="button-group">
+        <button class="btn" *ngIf="!editMode" (click)="onEdit(todo)">
+          <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </button>
+        <button class="btn " *ngIf="todo.status" (click)="onDelete(todo)">
+          <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
+        </button>
+
+        <!-- ID {{todo.id}} -->
+        <button class="btn btn-xs btn-success" *ngIf="!editMode && todo.id" (click)="onUpdate(todo)">Complete</button>
+        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && todo.id" (click)="onUpdate(todo)">Save</button>
+        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && !todo.id" (click)="onAdd(todo)">Save</button>
       </div>
 
+      <div class="dateline">
+        <p *ngIf="todo.createdDT">created: {{ todo.createdDT  | date: 'medium'}}</p>
+        <p *ngIf="todo.updatedDT">updated: {{ todo.updatedDT | date: 'medium'}}</p>
+      </div>
+    </div>
 
-            <div class="todo-footer">
-              <div class="button-group">
-                <button class="btn" *ngIf="!editMode" (click)="onEdit(todo)">
-                <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
-              </button>
-                <button class="btn " *ngIf="todo.status" (click)="onDelete(todo)">
-                <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
-              </button>
-
-              <button class="btn btn-xs btn-primary" *ngIf="!editMode" (click)="onSelect($event)">Select</button>
-
-              <button class="btn btn-xs btn-success" *ngIf="!editMode" (click)="onUpdate(todo)">Complete</button>
-
-              <button class="btn btn-xs btn-success" *ngIf="editMode || todo._isDirty" (click)="onUpdate(todo)">Save</button>
-              </div>
-
-              <div class="dateline">
-                <p *ngIf="todo.createdDT">created: {{ todo.createdDT  | date: 'medium'}}</p>
-                <p *ngIf="todo.updatedDT">updated: {{ todo.updatedDT | date: 'medium'}}</p>
-              </div>
-            </div>
-
-    </ng-container>
+  </ng-container>
 </div>

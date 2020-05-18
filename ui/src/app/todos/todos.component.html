@@ -6,7 +6,7 @@
   <app-summary [todoCount]="todos.length" [statusFilter]="statusFilter"></app-summary>
 
   <div class="mass-edit">
-    <button class="btn btn-xs btn-warning" *ngIf="todos.length > 0" (click)="toggle()">
+    <button class="btn btn-xs btn-warning" *ngIf="todos.length > 1" (click)="toggle()">
       Select All
     </button>
 
