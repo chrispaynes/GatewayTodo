@@ -14,7 +14,7 @@ import (
 
 // Data ...
 type Data interface {
-	AddTodo(context.Context, *todos.AddTodoRequest) (*empty.Empty, error)
+	AddTodo(context.Context, *todos.AddTodoRequest) (*todos.TodoResponse, error)
 	GetTodo(context.Context, uint32) (*todos.TodoResponse, error)
 	GetAllTodos(context.Context, *empty.Empty) (*todos.TodosResponse, error)
 	GetTodosByID(context.Context, *todos.GetTodosRequest) (*todos.TodosResponse, error)
@@ -76,6 +76,33 @@ WHERE todo_id = %d
 `
 
 	if err := c.DB.Get(t, fmt.Sprintf(query, ID)); err != nil {
+		log.WithError(err).Error(ErrQuery(txName))
+
+		return nil, errMsg
+	}
+
+	return newTodoResponse(t), nil
+}
+
+// GetTodoByTitleAndDescription ...
+func (c *Conn) GetTodoByTitleAndDescription(ctx context.Context, title, description string) (*todos.TodoResponse, error) {
+	errMsg := fmt.Errorf("failed to get Todo by title: %s", title)
+	txName := "GetTodoByTitleAndDescription"
+
+	t := &Todo{}
+
+	query := `
+SELECT t.todo_id, t.title, t.description, t.created_dt, t.updated_dt, ts.status
+FROM app.todo t
+JOIN app.todo_status ts
+    ON t.status_id = ts.status_id
+WHERE t.title = '%s'
+    AND t.description = '%s'
+ORDER BY t.created_dt DESC
+LIMIT 1
+`
+
+	if err := c.DB.Get(t, fmt.Sprintf(query, title, description)); err != nil {
 		log.WithError(err).Error(ErrQuery(txName))
 
 		return nil, errMsg
@@ -181,7 +208,7 @@ func (c *Conn) GetTodosByID(ctx context.Context, req *todos.GetTodosRequest) (*t
 }
 
 // AddTodo ...
-func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.Empty, error) {
+func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error) {
 	errMsg := errors.New("failed to store Todo")
 	txName := "AddTodo"
 
@@ -210,7 +237,16 @@ func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*empty.E
 		return nil, errMsg
 	}
 
-	return &empty.Empty{}, nil
+	resp, err := c.GetTodoByTitleAndDescription(ctx, req.GetTitle(), req.GetDescription())
+
+	if err != nil {
+		// we're ignoring the error here since we successfully stored the new todo
+		// the client will recieve a 200 OK response but won't see the new todo
+		// returned in the response
+		return nil, nil
+	}
+
+	return resp, nil
 }
 
 // UpdateTodo ...

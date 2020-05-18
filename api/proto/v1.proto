@@ -23,7 +23,7 @@ message StringMessage {
 }
 
 service TodosAPI {
-    rpc AddTodo(AddTodoRequest) returns (google.protobuf.Empty) {
+    rpc AddTodo(AddTodoRequest) returns (TodoResponse) {
         option (google.api.http) = {
             post: "/v1/todo",
             body: "*",
