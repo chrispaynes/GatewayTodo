@@ -1,20 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
   HttpClient,
-  HttpHeaders,
-  HttpParams,
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
 import { Observable, of, from } from 'rxjs';
-import {
-  map,
-  tap,
-  switchMap,
-  catchError,
-  timeout,
-  filter,
-} from 'rxjs/operators';
+import { map, switchMap, catchError, timeout } from 'rxjs/operators';
 import { Todo, Todos } from './todo';
 
 @Injectable({
@@ -49,15 +40,25 @@ export class TodoService {
     );
   }
 
-  public updateTodo(todo: Todo): Observable<Todo[]> {
-    return this._http.put('http://localhost:3000/v1/todo', {}).pipe(
-      timeout(2000),
-      catchError((error: HttpErrorResponse) => {
-        return of(null);
-      }),
-      tap((x) => console.log(x)),
-      map((x: Todos) => x.todos)
-    );
+  public updateTodo(todo: Todo, newStatus?: 'completed'): Observable<Todo> {
+    const body = {
+      id: todo.id,
+      title: todo.title,
+      description: todo.description,
+      status: todo.status,
+    };
+
+    return this._http
+      .put(`http://localhost:3000/v1/todo/${todo.id}`, body)
+      .pipe(
+        timeout(2000),
+        catchError((error: HttpErrorResponse) => {
+          return of(null);
+        }),
+        map((t: Todo) => {
+          return t ? t : null;
+        })
+      );
   }
 
   public updateTodos(todos: Todos): Observable<Todo> {
@@ -74,7 +75,7 @@ export class TodoService {
 
   public deleteTodo(id: number): Observable<boolean> {
     return this._http
-      .request('delete', `http://localhost:3000/v1/todo${id}`, {
+      .request('delete', `http://localhost:3000/v1/todo/${id}`, {
         observe: 'response',
       })
       .pipe(

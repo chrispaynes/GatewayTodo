@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { from, observable, Observable } from 'rxjs';
-import { Todo, StatusFilter, DefaultTemplateTitle, DefaultTemplateDescription } from '../todo';
+import { Router } from '@angular/router';
+import { from, Observable } from 'rxjs';
+import {
+  Todo,
+  StatusFilter,
+  DefaultTemplateTitle,
+  DefaultTemplateDescription,
+} from '../todo';
 import { TodoService } from '../todo.service';
 import { tap, filter } from 'rxjs/operators';
 
@@ -17,16 +22,13 @@ export class TodosComponent implements OnInit {
   statusFilter: StatusFilter = '';
   selectedTodos: number[] = [];
 
-  constructor(
-    private router: Router,
-    private todoService: TodoService
-  ) {}
+  constructor(private router: Router, private todoService: TodoService) {}
 
   ngOnInit(): void {
     // use the router URL to determine which todos to display
     this.statusFilter = this.mapRouteToFilter(this.router.url.replace('/', ''));
 
-    this.loadTodos(this.todoService.getAllTodos())
+    this.loadTodos(this.todoService.getAllTodos());
   }
 
   // loadTodos loads todos from a datasource
@@ -37,7 +39,9 @@ export class TodosComponent implements OnInit {
 
     // add a blank todo template for users create a new todo
     if (['', 'add', 'todo'].includes(this.statusFilter)) {
-      this.todos.push(new Todo(DefaultTemplateTitle, DefaultTemplateDescription));
+      this.todos.push(
+        new Todo(DefaultTemplateTitle, DefaultTemplateDescription)
+      );
     }
 
     from(dataSource)
@@ -51,8 +55,8 @@ export class TodosComponent implements OnInit {
         }),
         tap((t: Todo) => {
           this.todos.push(t);
-          this.todoCount++
-        }),
+          this.todoCount++;
+        })
       )
       .subscribe();
   }
@@ -110,13 +114,15 @@ export class TodosComponent implements OnInit {
   // in the UI's todo grid
   public saveAll(todoIDs: number[]) {
     if (todoIDs.length === 0) {
-      return
+      return;
     }
 
     // filter out any todo's that were not in the selection list
-    const todos: Todo[] = this.todos.filter((t:Todo) => todoIDs.includes(t.id))
-    const updatedTodos = this.todoService.updateTodos({todos: todos})
+    const todos: Todo[] = this.todos.filter((t: Todo) =>
+      todoIDs.includes(t.id)
+    );
+    const updatedTodos = this.todoService.updateTodos({ todos: todos });
 
-    this.loadTodos(updatedTodos)
+    this.loadTodos(updatedTodos);
   }
 }

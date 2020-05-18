@@ -27,7 +27,6 @@ export class TodoComponent implements OnInit {
 
   @HostListener('document:keydown.escape', ['$event'])
   onKeydownHandler(event: KeyboardEvent) {
-    console.log(event);
     this.editMode = false;
   }
 
@@ -80,45 +79,73 @@ export class TodoComponent implements OnInit {
     if (!event) {
       this.editMode = false;
     }
-
-    console.log('FOCUS', event);
   }
 
   public onEdit(todo: Todo) {
     this.editMode = true;
   }
 
-  public onDelete(todo: Todo) {
-    console.log('onDelete', todo);
+  public onDelete(todoID: number) {
+    this._todoService
+      .deleteTodo(todoID)
+      .pipe(
+        tap((wasSuccessful: boolean) => {
+          if (wasSuccessful) {
+            location.reload();
+          }
+        })
+      )
+      .subscribe();
   }
 
   public onAdd(todo: Todo) {
-    console.log('onAdd', todo);
-
     if (this.shouldDisableSave(todo)) {
-      return
+      return;
     }
 
     this.reloadTodo(this._todoService.addTodo(todo));
   }
 
   public shouldDisableSave(todo: Todo): boolean {
-    return (
-      todo.title === '' ||
-      todo.description == '' ||
-      todo.title === DefaultTemplateTitle ||
-      todo.description == DefaultTemplateDescription
-    );
+    if (!todo.id) {
+      return (
+        todo.title === '' ||
+        todo.description == '' ||
+        todo.title === DefaultTemplateTitle ||
+        todo.description == DefaultTemplateDescription
+      );
+    }
+
+    return !todo._isDirty || todo.title === '' || todo.description == '';
   }
 
-  public onUpdate(todo: Todo) {
-    console.log('onUpdate', todo);
+  public shouldEnableCompleteButton(todo:Todo): boolean {
+    return !this.editMode && todo.id && !todo._isDirty && todo.status !== 'completed'
+  }
+
+  public onUpdate(todo: Todo, newStatus?: 'completed') {
+    if (newStatus) {
+      todo.status = newStatus;
+    }
+
+    if (!newStatus && this.shouldDisableSave(todo)) {
+      return;
+    }
+
+    this.reloadTodo(this._todoService.updateTodo(todo));
   }
 
   // loadTodos loads todos from a datasource
   private reloadTodo(dataSource: Observable<Todo>) {
     from(dataSource)
-      .pipe(tap((todo: Todo) => (this.todo = todo)))
+      .pipe(
+        tap((todo: Todo) => {
+          if (todo) {
+            this.todo = todo;
+            this.editMode = false;
+          }
+        })
+      )
       .subscribe();
   }
 }

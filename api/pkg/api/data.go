@@ -259,7 +259,7 @@ UPDATE app.todo
 SET title = '%s',
     description = '%s',
     updated_dt = NOW(),
-    status_id = (SELECT status_id FROM app.todo_status WHERE status = '%s')
+    status_id = (SELECT status_id FROM app.todo_status WHERE status = '%s' LIMIT 1)
 WHERE todo_id = %d
 `
 	tx, err := c.DB.Begin()

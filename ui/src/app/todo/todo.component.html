@@ -6,7 +6,7 @@
     </ng-container>
 
     <div *ngIf="editMode">
-      <form [formGroup]="form" (ngSubmit)="onEdit(todo)">
+      <form [formGroup]="form">
         <input class="title" formControlName="title" placeholder="Todo Title">
         <input class="description" formControlName="description" placeholder="Todo Description">
       </form>
@@ -14,16 +14,21 @@
 
     <div class="todo-footer">
       <div class="button-group">
-        <button class="btn" *ngIf="!editMode" (click)="onEdit(todo)">
+        <button class="btn" *ngIf="!editMode && todo.status !== 'completed'" (click)="onEdit(todo)">
           <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
         </button>
-        <button class="btn " *ngIf="todo.status" (click)="onDelete(todo)">
+        <button class="btn " *ngIf="todo.status" (click)="onDelete(todo.id)">
           <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
         </button>
 
-        <button class="btn btn-xs btn-success" *ngIf="!editMode && todo.id" (click)="onUpdate(todo)">Complete</button>
-        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && todo.id" (click)="onUpdate(todo)">Save</button>
-        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && !todo.id" [disabled]="shouldDisableSave(todo)"  (click)="onAdd(todo)">Save</button>
+        <!-- save functionality for updating an existing todo to complete -->
+        <button class="btn btn-xs btn-success" *ngIf="shouldEnableCompleteButton(todo)" (click)="onUpdate(todo, 'completed')">Complete</button>
+
+        <!-- save functionality for edits made to an existing todo -->
+        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && todo.id" [disabled]="shouldDisableSave(todo)" (click)="onUpdate(todo)">Save</button>
+
+        <!-- save functionality for edits made to the todo template -->
+        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && !todo.id" [disabled]="shouldDisableSave(todo)" (click)="onAdd(todo)">Save</button>
       </div>
 
       <div class="dateline">
