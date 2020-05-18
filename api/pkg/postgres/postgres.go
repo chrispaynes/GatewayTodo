@@ -10,13 +10,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// NewDBWithRetry ...
+// NewDBWithRetry creates a new DB pointer after connecting to the database.
+// supply a time duration to control the length of time the connection is retried
 func NewDBWithRetry(t time.Duration) *sqlx.DB {
 	log.Info("attempting to connect to Postgres")
 
 	timeout := time.Now().Add(t)
-
 	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", conf.DBUser, conf.DBPassword, conf.DBHost, conf.DBName)
+
+	if conf.ServerEnv == "prod" || conf.EnableSSL {
+		dsn = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=require", conf.DBUser, conf.DBPassword, conf.DBHost, conf.DBName)
+	}
 
 	attempt := 0
 
@@ -34,7 +38,6 @@ func NewDBWithRetry(t time.Duration) *sqlx.DB {
 			log.Fatal(errors.Wrapf(err, "failed to connect to postgres database after attempt %d", attempt))
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(conf.RetrySleepSeconds) * time.Second)
 	}
-
 }

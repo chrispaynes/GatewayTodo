@@ -7,16 +7,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ErrParseEnv ...
 var ErrParseEnv = errors.New("failed to parse environment variables")
 
-// SetFormat ...
+// SetFormat sets the logger format within a package
 func SetFormat(logLevel string) {
 	log.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,
 		ForceColors:      true,
 	})
 
+	// output which files and line numbers printed the log
+	// note: this is useful but can be pretty noisy
 	log.SetReportCaller(true)
 
 	log.SetLevel(log.InfoLevel)
@@ -28,7 +29,7 @@ func SetFormat(logLevel string) {
 	return
 }
 
-// LogEnv ...
+// LogEnv logs the environment configuration to standard out
 func LogEnv(conf interface{}, pkg string) {
 	log.WithField("env", fmt.Sprintf("%+v", conf)).Infof("%s env", pkg)
 }

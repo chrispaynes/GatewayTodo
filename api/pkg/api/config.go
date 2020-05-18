@@ -7,7 +7,8 @@ import (
 )
 
 type config struct {
-	LogLevel string `default:"info" envconfig:"LOG_LEVEL" split_words:"true"`
+	LogLevel  string `default:"info" envconfig:"LOG_LEVEL" split_words:"true"`
+	ServerEnv string `default:"prod" envconfig:"SERVER_ENV" split_words:"true"`
 }
 
 var conf = &config{}

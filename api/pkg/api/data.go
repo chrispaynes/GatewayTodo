@@ -12,7 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Data ...
+// The Data interface serves provides functionality for the gRPC route handlers to
+// access the the data layer and retrieve data needed for API responses
 type Data interface {
 	AddTodo(context.Context, *todos.AddTodoRequest) (*todos.TodoResponse, error)
 	GetTodo(context.Context, uint32) (*todos.TodoResponse, error)
@@ -24,12 +25,12 @@ type Data interface {
 	DeleteTodos(context.Context, []uint32) (*empty.Empty, error)
 }
 
-// Conn ...
+// Conn represents a connection to persistent storage
 type Conn struct {
 	DB *sqlx.DB
 }
 
-// Todo ...
+// Todo represents a Todo item stored and retrieved from the database
 type Todo struct {
 	ID          uint32         `db:"todo_id"`
 	Title       sql.NullString `db:"title"`
@@ -39,7 +40,7 @@ type Todo struct {
 	UpdatedDT   sql.NullString `db:"updated_dt"`
 }
 
-// NSString ...
+// NSString is a helper function to return a sqlNullstrings value or an empty string
 func NSString(ns sql.NullString) string {
 	if !ns.Valid {
 		return ""
@@ -59,7 +60,7 @@ func newTodoResponse(t *Todo) *todos.TodoResponse {
 	}
 }
 
-// GetTodo ...
+// GetTodo gets a single todo from the database using the todo's ID
 func (c *Conn) GetTodo(ctx context.Context, ID uint32) (*todos.TodoResponse, error) {
 	log.Debugf("GetTodo() - ctx: %+v, id: %d", ctx, ID)
 	errMsg := fmt.Errorf("failed to get Todo: %d", ID)
@@ -84,8 +85,9 @@ WHERE todo_id = %d
 	return newTodoResponse(t), nil
 }
 
-// GetTodoByTitleAndDescription ...
-func (c *Conn) GetTodoByTitleAndDescription(ctx context.Context, title, description string) (*todos.TodoResponse, error) {
+// getTodoByTitleAndDescription since this postgres driver doesn't return primary key values after executing a command,
+// this hacky func is an attempt to fetch a newly insert todo using its title and description.
+func (c *Conn) getTodoByTitleAndDescription(ctx context.Context, title, description string) (*todos.TodoResponse, error) {
 	errMsg := fmt.Errorf("failed to get Todo by title: %s", title)
 	txName := "GetTodoByTitleAndDescription"
 
@@ -111,7 +113,8 @@ LIMIT 1
 	return newTodoResponse(t), nil
 }
 
-// GetAllTodos ...
+// GetAllTodos gets all the todos from the database
+// TODO: this should be augmented with query params to limit how many rows are returned
 func (c *Conn) GetAllTodos(ctx context.Context, req *empty.Empty) (*todos.TodosResponse, error) {
 	errMsg := errors.New("failed to retrieve all todos")
 	txName := "GetAllTodos"
@@ -149,13 +152,15 @@ JOIN app.todo_status ts
 	}, nil
 }
 
-// GetTodosByID ...
+// GetTodosByID gets a collection of todos within a list of supplied ID's
 func (c *Conn) GetTodosByID(ctx context.Context, req *todos.GetTodosRequest) (*todos.TodosResponse, error) {
 	errMsg := fmt.Errorf("failed to retrieve todos: %v", req.GetIds())
 	txName := "GetTodosByID"
 
 	t := Todo{}
 
+	// note: there's likely a limit of how many elements or characters Postgres allows in an IN clause
+	// it's probably worth checking the length of req.GetIds() to set a sane limit
 	q := `
     SELECT t.todo_id, t.title, t.description, t.created_dt, t.updated_dt, ts.status
     FROM app.todo t
@@ -207,7 +212,7 @@ func (c *Conn) GetTodosByID(ctx context.Context, req *todos.GetTodosRequest) (*t
 	}, nil
 }
 
-// AddTodo ...
+// AddTodo adds a new todo item in the database and attempts to fetch and return the recently add todo
 func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.TodoResponse, error) {
 	errMsg := errors.New("failed to store Todo")
 	txName := "AddTodo"
@@ -237,7 +242,7 @@ func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.T
 		return nil, errMsg
 	}
 
-	resp, err := c.GetTodoByTitleAndDescription(ctx, req.GetTitle(), req.GetDescription())
+	resp, err := c.getTodoByTitleAndDescription(ctx, req.GetTitle(), req.GetDescription())
 
 	if err != nil {
 		// we're ignoring the error here since we successfully stored the new todo
@@ -249,7 +254,7 @@ func (c *Conn) AddTodo(ctx context.Context, req *todos.AddTodoRequest) (*todos.T
 	return resp, nil
 }
 
-// UpdateTodo ...
+// UpdateTodo updates a todo in the database
 func (c *Conn) UpdateTodo(ctx context.Context, req *todos.UpdateTodoRequest) (*todos.TodoResponse, error) {
 	errMsg := fmt.Errorf("failed to update Todo: %d", req.GetId())
 	txName := "UpdateTodo"
@@ -289,7 +294,7 @@ WHERE todo_id = %d
 	return c.GetTodo(ctx, req.GetId())
 }
 
-// UpdateTodos ...
+// UpdateTodos performs a transactional update on a batch of todos but rolls the transaction back upon error
 func (c *Conn) UpdateTodos(ctx context.Context, req *todos.UpdateTodosRequest) (*todos.TodosResponse, error) {
 	errMsg := errors.New("failed to update Todos")
 	txName := "UpdateTodos"
@@ -349,7 +354,7 @@ WHERE todo_id = %d
 	return c.GetTodosByID(ctx, &todos.GetTodosRequest{Ids: IDs})
 }
 
-// DeleteTodo ...
+// DeleteTodo deletes a todo from the database using its ID
 func (c *Conn) DeleteTodo(ctx context.Context, ID uint32) (*empty.Empty, error) {
 	errMsg := fmt.Errorf("failed to delete Todo: %d", ID)
 	txName := "DeleteTodo"
@@ -377,7 +382,7 @@ func (c *Conn) DeleteTodo(ctx context.Context, ID uint32) (*empty.Empty, error) 
 	return &empty.Empty{}, nil
 }
 
-// DeleteTodos ...
+// DeleteTodos deletes a batch of todos based on their ID
 func (c *Conn) DeleteTodos(ctx context.Context, IDs []uint32) (*empty.Empty, error) {
 	if len(IDs) == 0 {
 		return &empty.Empty{}, nil

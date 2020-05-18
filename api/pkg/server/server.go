@@ -20,11 +20,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-/* TODOS
-   - Add 12 factor for server ports
-*/
-
-// Config ...
+// Config represents the server connections and resources
 type Config struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -35,7 +31,7 @@ type Config struct {
 	db *sqlx.DB
 }
 
-// NewServer ...
+// NewServer creates a new server configuration
 func NewServer(ctx context.Context, wg *sync.WaitGroup, db *sqlx.DB) *Config {
 	return &Config{
 		ctx: ctx,
@@ -44,25 +40,31 @@ func NewServer(ctx context.Context, wg *sync.WaitGroup, db *sqlx.DB) *Config {
 	}
 }
 
-// Start starts server
+// Start starts the gRPC and REST servers and listens
+// for a context.Done() signal before shutting down the servers
 func (c *Config) Start() {
 	c.wg.Add(1)
 	go func() {
-		log.Fatal(c.startGRPC())
+		log.Info("starting the gRPC server")
+		log.Fatal(c.startGRPCServer())
 		c.wg.Done()
 	}()
 
 	c.wg.Add(1)
 	go func() {
-		log.Fatal(c.startREST())
+		log.Info("starting the REST server")
+		log.Fatal(c.startRESTServer())
 		c.wg.Done()
 	}()
 
+	log.Info("successfully started gRPC and REST servers")
 	c.wg.Wait()
 
 	go func() {
 		<-c.ctx.Done()
+
 		log.Info("shutting down traffic to servers")
+
 		go func() {
 			log.Info("shutting down gRPC server")
 			c.grpcServer.GracefulStop()
@@ -80,14 +82,16 @@ func (c *Config) Start() {
 	}()
 }
 
-// Shutdown stops the server
+// Shutdown cancels the context and shuts down the the server
 func (c *Config) Shutdown() {
 	c.cancel()
 	c.wg.Wait()
 }
 
-func (c *Config) startGRPC() error {
-	lis, err := net.Listen("tcp", ":3001")
+// startGRPCServer starts the gRPC server
+// and registers the gRPC API Server
+func (c *Config) startGRPCServer() error {
+	lis, err := net.Listen("tcp", ":"+conf.gRPCPort)
 
 	if err != nil {
 		return err
@@ -105,7 +109,9 @@ func (c *Config) startGRPC() error {
 	return nil
 }
 
-func (c *Config) startREST() error {
+// startRESTServer starts the REST HTTP server
+// and sets the gRPC Gateway mux as its handler
+func (c *Config) startRESTServer() error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -119,17 +125,17 @@ func (c *Config) startREST() error {
 		EmitDefaults: true,
 	})
 
-	// TODO move to 12 factor vars
 	c.httpServer = &http.Server{
-		Addr:         ":3000",
-		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  120 * time.Second,
-		WriteTimeout: 120 * time.Second,
+		Addr:         ":" + conf.RESTPort,
+		IdleTimeout:  time.Duration(conf.HTTPTimeoutSeconds) * time.Second,
+		ReadTimeout:  time.Duration(conf.HTTPTimeoutSeconds) * time.Second,
+		WriteTimeout: time.Duration(conf.HTTPTimeoutSeconds) * time.Second,
 		Handler:      newRouter(mux),
 	}
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := todos.RegisterTodosAPIHandlerFromEndpoint(ctx, mux, ":3001", opts)
+	err := todos.RegisterTodosAPIHandlerFromEndpoint(ctx, mux, ":"+conf.gRPCPort, opts)
+
 	if err != nil {
 		return err
 	}
@@ -137,8 +143,11 @@ func (c *Config) startREST() error {
 	return c.httpServer.ListenAndServe()
 }
 
+// newRouter creates a new HTTP router with middleware
+// and serves to proxy REST traffic to the gRPC Gateway mux
 func newRouter(mux *runtime.ServeMux) *chi.Mux {
 	r := chi.NewRouter()
+
 	r.Use(middleware.RedirectSlashes)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Timeout(time.Duration(15 * time.Second)))
@@ -150,9 +159,10 @@ func newRouter(mux *runtime.ServeMux) *chi.Mux {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Content-Type"},
 		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           300,
 	}))
 
+	// forward v1 todo traffic to the gRPC mux
 	pattern := "/v1/todo*"
 	r.Method("DELETE", pattern, mux)
 	r.Method("GET", pattern, mux)

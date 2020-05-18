@@ -4,60 +4,66 @@ networks:
         driver: bridge
 services:
     ui:
-        container_name: api
+        container_name: ui
         build:
             context: ./ui
             dockerfile: Dockerfile
-        image: api:latest
-        restart: always
-        # networks:
-        #     - proxy
+        image: ui:latest
+        depends_on:
+            - postgres
+            - api
+        networks:
+            - proxy
         ports:
-            - "8080:8080"
-        volumes:
-            - /go/src/github.com/chrispaynes/vorChall:/go/src/github.com/chrispaynes/vorChall
+            - "8080:80"
         env_file:
-            # VARIABLES:
-            #   - POSTGRES_USER
-            #   - POSTGRES_PASSWORD
-            #   - POSTGRES_DB
             - ./api/api.env
-            - ./db/postgres.env
         environment:
             - LOG_LEVEL=debug
+            - API_PROTOCOL=http
+            - API_HOST=127.0.0.1
+            - API_PORT=3000
+            - PORT=8080
+            - SERVER_ENV=dev
     api:
         container_name: api
         build:
             context: ./api
             dockerfile: Dockerfile
         image: api:latest
-        restart: always
         depends_on:
             - postgres
         networks:
             - proxy
         ports:
-            - "3000:3000"
-            - "3001:3001"
-        volumes:
-            - ./vorChall/api:/go/src/github.com/chrispaynes/vorChall
+            - "3000:3000" # REST Server
+            - "3001:3001" # gRPC Server
+            # - "4200:4200" # can optionally serve the UI through this container as well -- see the README for more details
         env_file:
             # VARIABLES:
             #   - POSTGRES_USER
             #   - POSTGRES_PASSWORD
             #   - POSTGRES_DB
             #   - POSTGRES_HOST
-            - ./api/api.env
+            #   - SSL_MODE
             - ./db/postgres.env
         environment:
+            - ENABLE_SSL=false
+            - GRPC_PORT=3001 # must match the port mapping above
+            - HEROKU_PORT=9999 # not used in dev
+            - HTTP_TIME_SECONDS=120
             - LOG_LEVEL=debug
+            - REST_PORT=3000 # must match the port mapping above
+            - SERVER_ENV=dev
+            - SERVE_UI=false
+            - UI_FILEPATH="./dist/todo-app/"
+            - UI_PORT=4200 # must match the port mapping above
     postgres:
         container_name: todos-postgres
         build:
             context: ./db
             dockerfile: Dockerfile
         image: todos-postgres:latest
-        restart: always
         networks:
             - proxy
         env_file:
@@ -71,4 +77,3 @@ services:
             - "5432:5432"
         volumes:
             - ./db/pgdata:/var/lib/postgresql/data
-

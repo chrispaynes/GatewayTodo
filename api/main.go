@@ -16,14 +16,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-/* TODOS
-   - Add 12 factor
-*/
-
 type config struct {
-	LogLevel string `default:"info" envconfig:"LOG_LEVEL" split_words:"true"`
-	ctx      context.Context
 	cancel   context.CancelFunc
+	ctx      context.Context
+	LogLevel string `default:"info" envconfig:"LOG_LEVEL" split_words:"true"`
+	ServeUI  bool   `default:"false" envconfig:"SERVE_UI" split_words:"true"`
 }
 
 var conf = &config{}
@@ -44,7 +41,11 @@ func main() {
 
 	s := server.NewServer(conf.ctx, &sync.WaitGroup{}, db)
 
-	s.Start()
+	go s.Start()
+
+	if conf.ServeUI {
+		go server.ServeUI()
+	}
 
 	<-conf.ctx.Done()
 	s.Shutdown()
