@@ -3,7 +3,7 @@
     no todos to display
   </span>
 
-  <app-summary [todoCount]="todos.length" [statusFilter]="statusFilter"></app-summary>
+  <app-summary [todoCount]="todoCount" [statusFilter]="statusFilter"></app-summary>
 
   <div class="mass-edit">
     <button class="btn btn-xs btn-warning" *ngIf="todos.length > 1" (click)="toggle()">

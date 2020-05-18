@@ -12,7 +12,6 @@
       </form>
     </div>
 
-
     <div class="todo-footer">
       <div class="button-group">
         <button class="btn" *ngIf="!editMode" (click)="onEdit(todo)">
@@ -22,10 +21,9 @@
           <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
         </button>
 
-        <!-- ID {{todo.id}} -->
         <button class="btn btn-xs btn-success" *ngIf="!editMode && todo.id" (click)="onUpdate(todo)">Complete</button>
         <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && todo.id" (click)="onUpdate(todo)">Save</button>
-        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && !todo.id" (click)="onAdd(todo)">Save</button>
+        <button class="btn btn-xs btn-success" *ngIf="(editMode || todo._isDirty) && !todo.id" [disabled]="shouldDisableSave(todo)"  (click)="onAdd(todo)">Save</button>
       </div>
 
       <div class="dateline">

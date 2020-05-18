@@ -8,7 +8,12 @@ import {
 } from '@angular/forms';
 
 import { TodoService } from '../todo.service';
-import { Todo, TodoEdit } from '../todo';
+import {
+  Todo,
+  TodoEdit,
+  DefaultTemplateDescription,
+  DefaultTemplateTitle,
+} from '../todo';
 import { map, tap } from 'rxjs/operators';
 import { from, Observable } from 'rxjs';
 
@@ -42,6 +47,7 @@ export class TodoComponent implements OnInit {
       title: [this.todo.title, Validators.required],
       description: [this.todo.description, Validators.required],
     });
+
     this.originalTitle = this.todo.title;
     this.originalDescription = this.todo.description;
 
@@ -50,6 +56,9 @@ export class TodoComponent implements OnInit {
 
   onChanges(): void {
     this.form.valueChanges.subscribe((edit: TodoEdit) => {
+      // if the todo's updated title or description don't match its original,
+      // assign the properties and consider the todo dirty. otherwise consider
+      // the todo unchangeds
       if (
         edit.title !== this.originalTitle ||
         edit.description !== this.originalDescription
@@ -64,8 +73,6 @@ export class TodoComponent implements OnInit {
           _isDirty: false,
         });
       }
-
-      console.log('val', this.todo);
     });
   }
 
@@ -79,7 +86,6 @@ export class TodoComponent implements OnInit {
 
   public onEdit(todo: Todo) {
     this.editMode = true;
-    console.log('onEdit', todo);
   }
 
   public onDelete(todo: Todo) {
@@ -89,11 +95,20 @@ export class TodoComponent implements OnInit {
   public onAdd(todo: Todo) {
     console.log('onAdd', todo);
 
-    if (todo.title === '' || todo.description == '') {
-      return;
+    if (this.shouldDisableSave(todo)) {
+      return
     }
 
     this.reloadTodo(this._todoService.addTodo(todo));
+  }
+
+  public shouldDisableSave(todo: Todo): boolean {
+    return (
+      todo.title === '' ||
+      todo.description == '' ||
+      todo.title === DefaultTemplateTitle ||
+      todo.description == DefaultTemplateDescription
+    );
   }
 
   public onUpdate(todo: Todo) {

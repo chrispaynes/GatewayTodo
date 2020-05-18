@@ -1,7 +1,7 @@
-import { Component, OnInit, SimpleChanges } from '@angular/core';
-import { Router, ActivatedRoute, ParamMap, UrlSegment } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { from, observable, Observable } from 'rxjs';
-import { Todo, StatusFilter } from '../todo';
+import { Todo, StatusFilter, DefaultTemplateTitle, DefaultTemplateDescription } from '../todo';
 import { TodoService } from '../todo.service';
 import { tap, filter } from 'rxjs/operators';
 
@@ -12,17 +12,18 @@ import { tap, filter } from 'rxjs/operators';
 })
 export class TodosComponent implements OnInit {
   todos: Todo[] = [];
+  todoCount: number = 0; // includes all todos except for the blank template
 
   statusFilter: StatusFilter = '';
   selectedTodos: number[] = [];
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private todoService: TodoService
   ) {}
 
   ngOnInit(): void {
+    // use the router URL to determine which todos to display
     this.statusFilter = this.mapRouteToFilter(this.router.url.replace('/', ''));
 
     this.loadTodos(this.todoService.getAllTodos())
@@ -32,21 +33,26 @@ export class TodosComponent implements OnInit {
   private loadTodos(dataSource: Observable<Todo>) {
     this.todos = [];
     this.selectedTodos = [];
+    this.todoCount = 0;
+
+    // add a blank todo template for users create a new todo
+    if (['', 'add', 'todo'].includes(this.statusFilter)) {
+      this.todos.push(new Todo(DefaultTemplateTitle, DefaultTemplateDescription));
+    }
 
     from(dataSource)
       .pipe(
         filter((todo: Todo) => {
-          if (['', 'add', 'todo'].includes(this.statusFilter)) {
-            this.todos.push(new Todo('new title', 'new description'));
-          }
-
           // apply a filter to the todo status when there's a filter
           // otherwise return every todo
           return this.statusFilter == ''
             ? !!todo
             : todo.status == this.statusFilter;
         }),
-        tap((x: Todo) => this.todos.push(x))
+        tap((t: Todo) => {
+          this.todos.push(t);
+          this.todoCount++
+        }),
       )
       .subscribe();
   }
@@ -61,6 +67,7 @@ export class TodosComponent implements OnInit {
     filterMap.set('archived', 'archived');
     filterMap.set('new', 'new');
 
+    // if we don't find a filter in the map, don't add a filter
     return !filterMap.get(route) ? '' : filterMap.get(route);
   }
 

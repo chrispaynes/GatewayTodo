@@ -34,3 +34,6 @@ export interface Todos {
 export type StatusFilter = '' | 'new' | 'todo' | 'completed' | 'archived';
 
 export type TodoEdit = {"title": string , "description": string}
+
+export const DefaultTemplateTitle = "new title";
+export const DefaultTemplateDescription = "new description";
