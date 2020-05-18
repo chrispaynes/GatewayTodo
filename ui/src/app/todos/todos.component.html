@@ -14,6 +14,9 @@
       <button class="btn btn-xs btn-danger" (click)="deleteAll(selectedTodos)">
         Delete All
       </button>
+      <button class="btn btn-xs btn-success" (click)="saveAll(selectedTodos)">
+        Save All
+      </button>
       <span>{{ selectedTodos.length }} {{ selectedTodos.length > 1 ? "todos" : "todo" }} selected</span>
     </ng-container>
   </div>

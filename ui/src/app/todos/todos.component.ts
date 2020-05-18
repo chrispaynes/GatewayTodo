@@ -1,100 +1,115 @@
 import { Component, OnInit, SimpleChanges } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap, UrlSegment } from '@angular/router';
-import { from } from 'rxjs';
+import { from, observable, Observable } from 'rxjs';
 import { Todo, StatusFilter } from '../todo';
 import { TodoService } from '../todo.service';
 import { tap, filter } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-todos',
-    templateUrl: './todos.component.html',
-    styleUrls: ['./todos.component.scss'],
+  selector: 'app-todos',
+  templateUrl: './todos.component.html',
+  styleUrls: ['./todos.component.scss'],
 })
 export class TodosComponent implements OnInit {
-    todos: Todo[] = [];
+  todos: Todo[] = [];
 
-    statusFilter: StatusFilter = '';
-    selectedTodos: number[] = [];
+  statusFilter: StatusFilter = '';
+  selectedTodos: number[] = [];
 
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private todoService: TodoService
-    ) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private todoService: TodoService
+  ) {}
 
-    ngOnInit(): void {
-        this.statusFilter = this.mapRouteToFilter(
-            this.router.url.replace('/', '')
-        );
+  ngOnInit(): void {
+    this.statusFilter = this.mapRouteToFilter(this.router.url.replace('/', ''));
 
-        console.log(this);
-        from(this.todoService.getAllTodos())
-            .pipe(
-                filter((todo: Todo) => {
+    this.loadTodos(this.todoService.getAllTodos())
+  }
 
-                  if (['', 'add', 'todo'].includes(this.statusFilter)) {
-                    this.todos.push(new Todo('new title', 'new description'));
-                  }
+  // loadTodos loads todos from a datasource
+  private loadTodos(dataSource: Observable<Todo>) {
+    this.todos = [];
+    this.selectedTodos = [];
 
-                    // apply a filter to the todo status when there's a filter
-                    // otherwise return every todo
-                    return this.statusFilter == ''
-                        ? !!todo
-                        : todo.status == this.statusFilter;
-                }),
-                tap((x: Todo) => this.todos.push(x))
-            )
-            .subscribe();
+    from(dataSource)
+      .pipe(
+        filter((todo: Todo) => {
+          if (['', 'add', 'todo'].includes(this.statusFilter)) {
+            this.todos.push(new Todo('new title', 'new description'));
+          }
+
+          // apply a filter to the todo status when there's a filter
+          // otherwise return every todo
+          return this.statusFilter == ''
+            ? !!todo
+            : todo.status == this.statusFilter;
+        }),
+        tap((x: Todo) => this.todos.push(x))
+      )
+      .subscribe();
+  }
+
+  // mapRouteToFilter maps the current route to a StatusFilter to
+  // filter out Todos by their status
+  private mapRouteToFilter(route: string): StatusFilter {
+    const filterMap = new Map();
+
+    filterMap.set('progress', 'todo');
+    filterMap.set('completed', 'completed');
+    filterMap.set('archived', 'archived');
+    filterMap.set('new', 'new');
+
+    return !filterMap.get(route) ? '' : filterMap.get(route);
+  }
+
+  public toggle() {
+    // deselect todos if we have some selected
+    if (this.selectedTodos.length > 0) {
+      this.selectedTodos = [];
+    } else {
+      // select all todos with a valid id (we're excluding the blank "template" todo)
+      this.selectedTodos = this.todos
+        .map((t: Todo) => t.id)
+        .filter((id: number) => id > 0);
     }
 
-    // mapRouteToFilter maps the current route to a StatusFilter to
-    // filter out Todos by their status
-    private mapRouteToFilter(route: string): StatusFilter {
-        console.log(route);
-        const filterMap = new Map();
-        filterMap.set('progress', 'todo');
-        filterMap.set('completed', 'completed');
-        filterMap.set('archived', 'archived');
-        filterMap.set('new', 'new');
+    // toggle each todo's selected state, except for the blank "template" todo
+    this.todos.forEach((todo: Todo) => {
+      if (todo.id > 0) {
+        todo._isSelected = !todo._isSelected;
+      }
+    });
+  }
 
-        return !filterMap.get(route) ? '' : filterMap.get(route);
+  public deleteAll(todoIDs: number[]) {
+    this.todoService
+      .deleteTodos(todoIDs)
+      .pipe(
+        tap((wasSuccessful: boolean) => {
+          if (wasSuccessful) {
+            this.todos = this.todos.filter(
+              (todo: Todo) => !todoIDs.includes(todo.id)
+            );
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  // saveAll saves all updates to todos except for
+  // the blank template todo in the first position
+  // in the UI's todo grid
+  public saveAll(todoIDs: number[]) {
+    if (todoIDs.length === 0) {
+      return
     }
 
-    public toggle() {
-        if (this.selectedTodos.length > 0) {
-            this.selectedTodos = [];
-        } else {
-            // select all todos with a valid id
-            this.selectedTodos = this.todos
-                .map((t: Todo) => t.id)
-                .filter((id: number) => id > 0);
-        }
+    // filter out any todo's that were not in the selection list
+    const todos: Todo[] = this.todos.filter((t:Todo) => todoIDs.includes(t.id))
+    const updatedTodos = this.todoService.updateTodos({todos: todos})
 
-        // toggle each Todo's selected state, except for the blank "template" todo
-        this.todos.forEach((todo: Todo) => {
-            if (todo.id > 0) {
-                todo._isSelected = !todo._isSelected;
-            }
-        });
-    }
-
-    public selectTodo(todo) {
-        console.log('selected', todo);
-    }
-
-    public deleteAll(todoIDs: number[]) {
-        this.todoService
-            .deleteTodos(todoIDs)
-            .pipe(
-                tap((wasSuccessful: boolean) => {
-                    if (wasSuccessful) {
-                        console.log("success, we're deleint");
-                        this.todos = this.todos.filter(
-                            (todo: Todo) => !todoIDs.includes(todo.id)
-                        );
-                    }
-                })
-            )
-            .subscribe();
-    }
+    this.loadTodos(updatedTodos)
+  }
 }

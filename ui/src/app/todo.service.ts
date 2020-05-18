@@ -15,7 +15,6 @@ import { Todo, Todos } from './todo';
 })
 export class TodoService {
     constructor(private _http: HttpClient) {}
-    todos$: any = [];
 
     public getAllTodos(): Observable<Todo> {
         return this._http.get('http://localhost:3000/v1/todos').pipe(
@@ -24,7 +23,6 @@ export class TodoService {
                 return of(null);
             }),
             switchMap((x: Todos) => {
-              this.todos$ = x;
               return x.todos
             })
         );
@@ -52,14 +50,15 @@ export class TodoService {
         );
     }
 
-    public updateTodos(todos: Todo[]): Observable<Todo[]> {
-        return this._http.put('http://localhost:3000/v1/todo', {}).pipe(
+    public updateTodos(todos: Todos): Observable<Todo> {
+        return this._http.put('http://localhost:3000/v1/todos', todos).pipe(
             timeout(2000),
             catchError((error: HttpErrorResponse) => {
                 return of(null);
             }),
-            tap((x) => console.log(x)),
-            map((x: Todos) => x.todos)
+            switchMap((x: Todos) => {
+              return x.todos
+            })
         );
     }
 
